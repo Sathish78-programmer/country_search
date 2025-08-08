@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Country Info Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+ <style>
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .container {
+    backdrop-filter: blur(12px);
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+
+  h1 {
+    font-weight: 600;
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+
+  input {
+    width: 70%;
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+  }
+
+  button {
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background: #00c9a7;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  button:hover {
+    background: #00a68f;
+  }
+
+  .info {
+    margin-top: 20px;
+  }
+
+  .info img {
+    width: 100px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin-top: 10px;
+  }
+
+  table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: left;
+  }
+
+  table td:first-child {
+    font-weight: 600;
+    width: 40%;
+    color: #00ffd5;
+  }
+
+  .info a {
+    color: #00c9a7;
+    text-decoration: none;
+  }
+
+  .info a:hover {
+    text-decoration: underline;
+  }
+
+  .error {
+    color: #ff6b6b;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+</style>
+
+</head>
+<body>
+
+  <div class="container">
+    <h1>🌍 Country Info Finder</h1>
+    <input type="text" id="countryInput" placeholder="Enter country name" />
+    <button onclick="getCountryInfo()">Search</button>
+
+    <div id="result" class="info"></div>
+    <div id="error" class="error"></div>
+  </div>
+
+<script>
+  function getCountryInfo() {
+    const country = document.getElementById('countryInput').value.trim();
+    const resultDiv = document.getElementById('result');
+    const errorDiv = document.getElementById('error');
+
+    // Reset previous content
+    resultDiv.innerHTML = '';
+    errorDiv.innerText = '';
+
+    if (!country) {
+      errorDiv.innerText = '❌ Please enter a country name.';
+      return;
+    }
+
+    // Show loader
+    resultDiv.innerHTML = '<p>🔄 Loading...</p>';
+
+    fetch(`https://restcountries.com/v3.1/name/${country}?fullText=true`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Country not found');
+        }
+        return response.json();
+      })
+      .then(data => {
+        const countryData = data[0];
+
+        const name = countryData.name.common;
+        const capital = countryData.capital ? countryData.capital[0] : 'N/A';
+        const population = countryData.population.toLocaleString();
+        const flag = countryData.flags.png;
+        const currencies = countryData.currencies
+          ? Object.values(countryData.currencies).map(c => `${c.name} (${c.symbol})`).join(', ')
+          : 'N/A';
+        const languages = countryData.languages
+          ? Object.values(countryData.languages).join(', ')
+          : 'N/A';
+        const mapLink = countryData.maps.googleMaps;
+
+        resultDiv.innerHTML = `
+          <img src="${flag}" alt="Flag of ${name}" />
+          <p><strong>Country:</strong> ${name}</p>
+          <p><strong>Capital:</strong> ${capital}</p>
+          <p><strong>Population:</strong> ${population}</p>
+          <p><strong>Currency:</strong> ${currencies}</p>
+          <p><strong>Languages:</strong> ${languages}</p>
+          <p><strong>Map:</strong> <a href="${mapLink}" target="_blank">View on Google Maps</a></p>
+        `;
+      })
+      .catch(error => {
+        resultDiv.innerHTML = '';
+        errorDiv.innerText = `❌ ${error.message}`;
+      });
+  }
+</script>
+
+
+</body>
+</html>
